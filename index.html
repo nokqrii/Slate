@@ -1,0 +1,2271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Slate — Function &amp; Calculus Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#12181a;
+    --bg-deep:#0c1012;
+    --panel:#1b2325;
+    --panel-alt:#212b2d;
+    --panel-raised:#242f31;
+    --border:rgba(238,241,234,0.09);
+    --border-strong:rgba(238,241,234,0.16);
+    --chalk:#eef1ea;
+    --chalk-dim:#a9b3ac;
+    --chalk-faint:#6d7772;
+    --brass:#d1a35c;
+    --brass-bright:#f0c37e;
+    --blue-chalk:#8ecae6;
+    --pink-chalk:#e8a0b4;
+    --green-chalk:#9fd8a3;
+    --danger:#e0776b;
+    --font-display:'Caveat', cursive;
+    --font-body:'Inter', system-ui, sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  html,body{height:100%;}
+
+  body{
+    background:var(--bg);
+    color:var(--chalk);
+    font-family:var(--font-body);
+    min-height:100vh;
+    background-image:
+      radial-gradient(ellipse 900px 500px at 12% -5%, rgba(209,163,92,0.07), transparent 55%),
+      radial-gradient(ellipse 700px 500px at 100% 10%, rgba(142,202,230,0.05), transparent 55%),
+      radial-gradient(circle at 50% 100%, rgba(0,0,0,0.4), transparent 60%);
+    position:relative;
+  }
+
+  /* subtle chalk-dust grain */
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:1000;
+    opacity:0.045;
+    mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  ::selection{ background:var(--brass); color:var(--bg-deep); }
+
+  ::-webkit-scrollbar{ width:10px; height:10px; }
+  ::-webkit-scrollbar-track{ background:transparent; }
+  ::-webkit-scrollbar-thumb{ background:var(--border-strong); border-radius:6px; }
+  ::-webkit-scrollbar-thumb:hover{ background:var(--chalk-faint); }
+
+  a, button, input, [tabindex]{ font-family:inherit; }
+  button:focus-visible, input:focus-visible, textarea:focus-visible, [tabindex]:focus-visible{
+    outline:2px solid var(--brass-bright);
+    outline-offset:2px;
+  }
+
+  /* ---------- Header ---------- */
+  .site-header{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    padding:2.25rem 1.5rem 1.25rem;
+    position:relative;
+  }
+
+  .wordmark{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:3.2rem;
+    color:var(--chalk);
+    line-height:1;
+    letter-spacing:0.01em;
+    position:relative;
+    display:inline-block;
+  }
+
+  .wordmark .accent{ color:var(--brass-bright); }
+
+  .squiggle{
+    width:220px;
+    height:16px;
+    margin:0.15rem auto 0;
+    display:block;
+    opacity:0.85;
+  }
+
+  .tagline{
+    font-family:var(--font-body);
+    font-size:0.92rem;
+    color:var(--chalk-dim);
+    margin-top:0.65rem;
+    max-width:34rem;
+    letter-spacing:0.01em;
+  }
+
+  .tagline b{ color:var(--chalk); font-weight:600; }
+
+  /* ---------- Layout ---------- */
+  .studio{
+    display:grid;
+    grid-template-columns:320px 1fr;
+    gap:1.25rem;
+    max-width:1440px;
+    margin:0 auto;
+    padding:0 1.5rem 2.5rem;
+  }
+
+  @media (max-width: 960px){
+    .studio{ grid-template-columns:1fr; }
+  }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    display:flex;
+    flex-direction:column;
+    gap:0.85rem;
+    min-width:0;
+  }
+
+  .tabbar{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:0.4rem;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:0.85rem;
+    padding:0.35rem;
+  }
+
+  .tabbar button{
+    background:transparent;
+    border:none;
+    color:var(--chalk-dim);
+    font-family:var(--font-body);
+    font-weight:600;
+    font-size:0.7rem;
+    letter-spacing:0.02em;
+    text-transform:uppercase;
+    padding:0.55rem 0.3rem;
+    border-radius:0.6rem;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:0.25rem;
+    transition:all 0.18s ease;
+  }
+
+  .tabbar button .glyph{
+    font-family:var(--font-display);
+    font-size:1.2rem;
+    font-weight:700;
+    line-height:1;
+  }
+
+  .tabbar button:hover{ color:var(--chalk); background:rgba(238,241,234,0.04); }
+
+  .tabbar button.active{
+    color:var(--bg-deep);
+    background:linear-gradient(135deg, var(--brass-bright), var(--brass));
+    box-shadow:0 4px 14px rgba(209,163,92,0.25);
+  }
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:0.9rem;
+    padding:1.15rem;
+    box-shadow:0 12px 30px rgba(0,0,0,0.28);
+  }
+
+  .panel-view{ display:none; flex-direction:column; gap:1rem; }
+  .panel-view.active{ display:flex; }
+
+  .field-label{
+    font-size:0.68rem;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--chalk-faint);
+    font-weight:700;
+    margin-bottom:0.4rem;
+    display:block;
+  }
+
+  input[type="text"], input[type="number"]{
+    width:100%;
+    background:var(--bg-deep);
+    border:1px solid var(--border);
+    border-radius:0.5rem;
+    padding:0.6rem 0.7rem;
+    color:var(--chalk);
+    font-family:var(--font-mono);
+    font-size:0.9rem;
+    transition:border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  input[type="text"]:focus, input[type="number"]:focus{
+    outline:none;
+    border-color:var(--brass);
+    box-shadow:0 0 0 3px rgba(209,163,92,0.15);
+  }
+
+  .btn{
+    background:var(--panel-raised);
+    border:1px solid var(--border-strong);
+    color:var(--chalk);
+    border-radius:0.5rem;
+    padding:0.55rem 0.85rem;
+    font-weight:600;
+    font-size:0.82rem;
+    cursor:pointer;
+    transition:all 0.15s ease;
+  }
+
+  .btn:hover{ border-color:var(--brass); color:var(--brass-bright); }
+
+  .btn.primary{
+    background:linear-gradient(135deg, var(--brass-bright), var(--brass));
+    border:none;
+    color:var(--bg-deep);
+  }
+
+  .btn.primary:hover{ filter:brightness(1.08); color:var(--bg-deep); }
+
+  .btn.ghost{ background:transparent; border:1px dashed var(--border-strong); color:var(--chalk-dim); }
+
+  .row{ display:flex; gap:0.5rem; }
+  .row.wrap{ flex-wrap:wrap; }
+
+  /* function list */
+  .fn-list{ display:flex; flex-direction:column; gap:0.5rem; }
+
+  .fn-chip{
+    display:flex;
+    align-items:center;
+    gap:0.55rem;
+    background:var(--bg-deep);
+    border:1px solid var(--border);
+    border-radius:0.6rem;
+    padding:0.5rem 0.6rem;
+    cursor:pointer;
+    transition:border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .fn-chip.active-fn{ border-color:var(--brass); background:rgba(209,163,92,0.07); }
+
+  .fn-swatch{
+    width:0.7rem; height:0.7rem; border-radius:50%;
+    flex:none;
+    box-shadow:0 0 8px currentColor;
+  }
+
+  .fn-chip input{
+    flex:1;
+    background:transparent;
+    border:none;
+    color:var(--chalk);
+    font-family:var(--font-mono);
+    font-size:0.85rem;
+    padding:0.1rem 0;
+  }
+
+  .fn-chip input:focus{ outline:none; }
+
+  .fn-chip button{
+    background:none; border:none; color:var(--chalk-faint);
+    cursor:pointer; font-size:1rem; line-height:1; padding:0.1rem 0.3rem;
+    border-radius:0.3rem;
+  }
+
+  .fn-chip button:hover{ color:var(--danger); }
+
+  .fn-chip .vis-toggle{ color:var(--chalk-dim); font-size:0.85rem; }
+  .fn-chip .vis-toggle:hover{ color:var(--brass-bright); }
+
+  .preset-chip{
+    background:rgba(238,241,234,0.04);
+    border:1px solid var(--border);
+    border-radius:2rem;
+    padding:0.3rem 0.75rem;
+    font-size:0.74rem;
+    font-family:var(--font-mono);
+    color:var(--chalk-dim);
+    cursor:pointer;
+    transition:all 0.15s ease;
+  }
+
+  .preset-chip:hover{ background:rgba(209,163,92,0.15); color:var(--brass-bright); border-color:var(--brass); }
+
+  .hint{ font-size:0.76rem; color:var(--chalk-faint); line-height:1.5; }
+
+  /* calculus panel */
+  .stat-line{
+    display:flex; justify-content:space-between; align-items:baseline;
+    padding:0.5rem 0;
+    border-bottom:1px solid var(--border);
+    font-family:var(--font-mono);
+  }
+  .stat-line:last-child{ border-bottom:none; }
+  .stat-line .k{ color:var(--chalk-dim); font-size:0.78rem; }
+  .stat-line .v{ color:var(--brass-bright); font-weight:600; font-size:0.92rem; }
+
+  .toggle-row{ display:flex; align-items:center; justify-content:space-between; gap:0.5rem; }
+  .toggle-row label{ font-size:0.82rem; color:var(--chalk-dim); }
+
+  .switch{
+    position:relative; width:38px; height:21px; flex:none;
+  }
+  .switch input{ opacity:0; width:0; height:0; position:absolute; }
+  .switch .track{
+    position:absolute; inset:0; background:var(--bg-deep); border:1px solid var(--border-strong);
+    border-radius:20px; cursor:pointer; transition:0.2s;
+  }
+  .switch .track::after{
+    content:""; position:absolute; width:15px; height:15px; border-radius:50%;
+    background:var(--chalk-faint); top:2px; left:2px; transition:0.2s;
+  }
+  .switch input:checked + .track{ background:rgba(209,163,92,0.25); border-color:var(--brass); }
+  .switch input:checked + .track::after{ background:var(--brass-bright); transform:translateX(17px); }
+
+  .critical-list{ display:flex; flex-direction:column; gap:0.3rem; max-height:130px; overflow-y:auto; }
+  .critical-list .item{
+    font-family:var(--font-mono); font-size:0.78rem; color:var(--chalk-dim);
+    background:var(--bg-deep); border:1px solid var(--border); border-radius:0.4rem;
+    padding:0.35rem 0.5rem;
+  }
+  .critical-list .item .tag{ color:var(--green-chalk); margin-right:0.4rem; }
+
+  /* calculator */
+  .calc-display{
+    background:var(--bg-deep);
+    border:1px solid var(--border-strong);
+    border-radius:0.6rem;
+    padding:0.9rem 0.9rem 0.6rem;
+    text-align:right;
+    font-family:var(--font-mono);
+  }
+  .calc-display .expr{ color:var(--chalk-faint); font-size:0.78rem; min-height:1.1rem; word-break:break-all; }
+  .calc-display .result{ color:var(--chalk); font-size:1.55rem; font-weight:600; word-break:break-all; }
+
+  .calc-grid{ display:grid; grid-template-columns:repeat(4, 1fr); gap:0.4rem; }
+  .calc-grid button{
+    background:var(--panel-alt);
+    border:1px solid var(--border);
+    color:var(--chalk);
+    border-radius:0.5rem;
+    padding:0.65rem 0.2rem;
+    font-family:var(--font-mono);
+    font-size:0.85rem;
+    cursor:pointer;
+    transition:all 0.12s ease;
+  }
+  .calc-grid button:hover{ border-color:var(--brass); color:var(--brass-bright); transform:translateY(-1px); }
+  .calc-grid button.op{ color:var(--brass-bright); }
+  .calc-grid button.eq{
+    background:linear-gradient(135deg, var(--brass-bright), var(--brass));
+    color:var(--bg-deep); border:none; font-weight:700;
+  }
+  .calc-grid button.danger{ color:var(--danger); }
+
+  /* segmented controls (3D render mode / resolution) */
+  .seg-group{ display:flex; gap:0.4rem; flex-wrap:wrap; }
+  .seg-btn{
+    background:var(--bg-deep);
+    border:1px solid var(--border);
+    color:var(--chalk-dim);
+    font-size:0.72rem;
+    font-weight:600;
+    padding:0.4rem 0.65rem;
+    border-radius:0.5rem;
+    cursor:pointer;
+    transition:all 0.15s ease;
+  }
+  .seg-btn:hover{ border-color:var(--brass); color:var(--brass-bright); }
+  .seg-btn.active{
+    background:linear-gradient(135deg, var(--brass-bright), var(--brass));
+    color:var(--bg-deep);
+    border-color:transparent;
+  }
+
+  /* 3D canvas */
+  .mini-canvas-wrap{
+    position:relative;
+    width:100%;
+    aspect-ratio:1/1;
+    border-radius:0.7rem;
+    overflow:hidden;
+    background:radial-gradient(ellipse at 50% 20%, rgba(238,241,234,0.04), transparent 65%), var(--bg-deep);
+    border:1px solid var(--border);
+    cursor:grab;
+    touch-action:none;
+  }
+  .mini-canvas-wrap:active{ cursor:grabbing; }
+  #canvas3d{ width:100%; height:100%; display:block; }
+
+  .probe-grid{ display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; }
+
+  /* complex numbers */
+  .complex-block{ display:flex; flex-direction:column; gap:0.6rem; }
+  .complex-inputs{ display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; }
+  .complex-result{
+    background:var(--bg-deep);
+    border:1px solid var(--border-strong);
+    border-radius:0.6rem;
+    padding:0.7rem 0.8rem;
+    font-family:var(--font-mono);
+    text-align:center;
+    font-size:1rem;
+    color:var(--brass-bright);
+    min-height:1.4rem;
+  }
+
+  /* reference */
+  .ref-card{
+    background:var(--bg-deep);
+    border:1px solid var(--border);
+    border-radius:0.6rem;
+    padding:0.65rem 0.8rem;
+  }
+  .ref-card h4{
+    font-family:var(--font-display);
+    font-size:1.15rem;
+    color:var(--brass-bright);
+    font-weight:700;
+    margin-bottom:0.35rem;
+  }
+  .ref-row{ display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:0.8rem; padding:0.2rem 0; color:var(--chalk-dim); }
+  .ref-row span:last-child{ color:var(--chalk); }
+
+  /* notes */
+  .notes-toolbar{ display:flex; justify-content:space-between; gap:0.5rem; align-items:center; }
+  .notes-list{ display:flex; flex-direction:column; gap:0.4rem; max-height:140px; overflow-y:auto; }
+  .note-chip{
+    display:flex; align-items:center; gap:0.5rem;
+    background:var(--bg-deep); border:1px solid var(--border); border-radius:0.5rem;
+    padding:0.45rem 0.6rem; cursor:pointer; transition:border-color 0.15s ease;
+  }
+  .note-chip.active-note{ border-color:var(--brass); background:rgba(209,163,92,0.07); }
+  .note-chip span.title{ flex:1; font-size:0.82rem; color:var(--chalk); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .note-chip button{ background:none; border:none; color:var(--chalk-faint); cursor:pointer; font-size:0.9rem; }
+  .note-chip button:hover{ color:var(--danger); }
+
+  textarea{
+    width:100%;
+    min-height:150px;
+    resize:vertical;
+    background:var(--bg-deep);
+    border:1px solid var(--border);
+    border-radius:0.5rem;
+    padding:0.65rem 0.75rem;
+    color:var(--chalk);
+    font-family:var(--font-mono);
+    font-size:0.85rem;
+    line-height:1.55;
+  }
+  textarea:focus{ outline:none; border-color:var(--brass); box-shadow:0 0 0 3px rgba(209,163,92,0.15); }
+  textarea:disabled, input:disabled{ opacity:0.4; cursor:not-allowed; }
+
+  .check-results{ display:flex; flex-direction:column; gap:0.5rem; max-height:220px; overflow-y:auto; }
+  .check-item{
+    background:var(--bg-deep);
+    border-left:3px solid var(--chalk-faint);
+    border-radius:0.4rem;
+    padding:0.5rem 0.65rem;
+    font-size:0.78rem;
+  }
+  .check-item .line{ font-family:var(--font-mono); color:var(--chalk-dim); margin-bottom:0.2rem; word-break:break-all; }
+  .check-item .verdict{ font-weight:700; font-size:0.78rem; }
+  .check-item.correct{ border-left-color:var(--green-chalk); }
+  .check-item.correct .verdict{ color:var(--green-chalk); }
+  .check-item.incorrect{ border-left-color:var(--danger); }
+  .check-item.incorrect .verdict{ color:var(--danger); }
+  .check-item.solved{ border-left-color:var(--blue-chalk); }
+  .check-item.solved .verdict{ color:var(--blue-chalk); }
+  .check-item.info{ border-left-color:var(--chalk-faint); }
+  .check-item.info .verdict{ color:var(--chalk-dim); }
+
+  .file-input-label{
+    display:inline-flex;
+    align-items:center;
+    background:var(--panel-raised);
+    border:1px solid var(--border-strong);
+    color:var(--chalk);
+    border-radius:0.5rem;
+    padding:0.55rem 0.85rem;
+    font-size:0.82rem;
+    font-weight:600;
+    cursor:pointer;
+    transition:all 0.15s ease;
+  }
+  .file-input-label:hover{ border-color:var(--brass); color:var(--brass-bright); }
+
+  /* ---------- Main / canvas ---------- */
+  .main-col{ display:flex; flex-direction:column; gap:1.25rem; min-width:0; }
+
+  .canvas-panel{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:1rem;
+    padding:1rem;
+    box-shadow:0 20px 50px rgba(0,0,0,0.35);
+  }
+
+  .canvas-toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:0.7rem;
+    flex-wrap:wrap;
+    gap:0.5rem;
+  }
+
+  .coord-readout{
+    font-family:var(--font-mono);
+    font-size:0.78rem;
+    color:var(--chalk-dim);
+    background:var(--bg-deep);
+    border:1px solid var(--border);
+    border-radius:0.4rem;
+    padding:0.3rem 0.6rem;
+    min-width:150px;
+  }
+
+  .coord-readout b{ color:var(--brass-bright); }
+
+  .canvas-wrap{
+    position:relative;
+    width:100%;
+    height:460px;
+    border-radius:0.7rem;
+    overflow:hidden;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(238,241,234,0.03), transparent 60%),
+      var(--bg-deep);
+    border:1px solid var(--border);
+  }
+
+  #graphCanvas{ width:100%; height:100%; display:block; cursor:crosshair; }
+
+  .zoom-controls{ display:flex; gap:0.4rem; }
+  .zoom-controls button{
+    width:2.1rem; height:2.1rem;
+    background:var(--panel-raised);
+    border:1px solid var(--border-strong);
+    color:var(--chalk);
+    border-radius:0.5rem;
+    font-size:1rem;
+    cursor:pointer;
+  }
+  .zoom-controls button:hover{ border-color:var(--brass); color:var(--brass-bright); }
+
+  .stats-grid{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:0.9rem;
+  }
+
+  @media (max-width: 760px){
+    .stats-grid{ grid-template-columns:repeat(2, 1fr); }
+  }
+
+  .stat-box{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:0.8rem;
+    padding:0.9rem;
+    text-align:center;
+  }
+
+  .stat-box h3{
+    font-size:0.68rem;
+    color:var(--chalk-faint);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    margin-bottom:0.35rem;
+    font-weight:700;
+  }
+
+  .stat-box p{
+    font-family:var(--font-mono);
+    font-size:1.15rem;
+    font-weight:600;
+    color:var(--brass-bright);
+  }
+
+  footer{
+    text-align:center;
+    color:var(--chalk-faint);
+    font-size:0.75rem;
+    padding:1.5rem;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition:none !important; animation:none !important; }
+  }
+</style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="wordmark">Slate<span class="accent">.</span></div>
+    <svg class="squiggle" viewBox="0 0 220 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2 8C20 2 34 14 52 8C70 2 84 14 102 8C120 2 134 14 152 8C170 2 184 14 202 8C210 6 214 8 218 7" stroke="#d1a35c" stroke-width="2.4" stroke-linecap="round"/>
+    </svg>
+    <p class="tagline">A chalkboard for functions — plot curves in 2D and 3D, study <b>derivatives</b> and <b>integrals</b>, work complex numbers, and check your equations, all in one slate.</p>
+  </header>
+
+  <div class="studio">
+
+    <!-- ================= SIDEBAR ================= -->
+    <aside class="sidebar">
+      <nav class="tabbar" role="tablist" aria-label="Studio tools">
+        <button class="tab-btn active" data-tab="plot" role="tab" aria-selected="true"><span class="glyph">ƒ(x)</span>Plot</button>
+        <button class="tab-btn" data-tab="calculus" role="tab" aria-selected="false"><span class="glyph">d/dx</span>Calculus</button>
+        <button class="tab-btn" data-tab="three" role="tab" aria-selected="false"><span class="glyph">◭</span>3D</button>
+        <button class="tab-btn" data-tab="calc" role="tab" aria-selected="false"><span class="glyph">÷</span>Calc</button>
+        <button class="tab-btn" data-tab="notes" role="tab" aria-selected="false"><span class="glyph">✎</span>Notes</button>
+        <button class="tab-btn" data-tab="ref" role="tab" aria-selected="false"><span class="glyph">§</span>Rules</button>
+      </nav>
+
+      <!-- ---- PLOT PANEL ---- -->
+      <div class="panel">
+        <div class="panel-view active" id="view-plot">
+          <div>
+            <span class="field-label">New function</span>
+            <div class="row">
+              <input type="text" id="fnInput" placeholder="e.g. sin(x) * x" value="sin(x) * x">
+              <button class="btn primary" id="addFnBtn">Add</button>
+            </div>
+            <p class="hint" style="margin-top:0.4rem;">Use <code>x</code>, <code>+ - * / ^</code>, and <code>sin cos tan sqrt log ln exp abs</code>. Constants: <code>pi</code>, <code>e</code>.</p>
+          </div>
+
+          <div class="row wrap" id="presetRow">
+            <div class="preset-chip" data-fn="sin(x) * x">sin(x)·x</div>
+            <div class="preset-chip" data-fn="x^3 - 3*x">x³−3x</div>
+            <div class="preset-chip" data-fn="exp(-x*x) * 5">5e^(−x²)</div>
+            <div class="preset-chip" data-fn="3*cos(x)">3cos(x)</div>
+            <div class="preset-chip" data-fn="1/x">1/x</div>
+            <div class="preset-chip" data-fn="sqrt(9 - x*x)">√(9−x²)</div>
+          </div>
+
+          <div>
+            <span class="field-label">Curves on the slate</span>
+            <div class="fn-list" id="fnList"></div>
+          </div>
+        </div>
+
+        <!-- ---- CALCULUS PANEL ---- -->
+        <div class="panel-view" id="view-calculus">
+          <div class="hint">Analysis follows the <b style="color:var(--brass-bright)">active</b> curve — click a curve chip in the Plot tab, or click directly on the graph, to set the point.</div>
+
+          <div>
+            <span class="field-label">Point x₀</span>
+            <div class="row">
+              <input type="number" id="pointX" value="1" step="0.1">
+              <button class="btn" id="snapBtn">Snap to graph</button>
+            </div>
+          </div>
+
+          <div class="toggle-row">
+            <label for="tangentToggle">Show tangent line</label>
+            <div class="switch"><input type="checkbox" id="tangentToggle" checked><span class="track"></span></div>
+          </div>
+
+          <div class="stat-line"><span class="k">f(x₀)</span><span class="v" id="calcFx">—</span></div>
+          <div class="stat-line"><span class="k">f′(x₀) — slope</span><span class="v" id="calcSlope">—</span></div>
+          <div class="stat-line"><span class="k">Tangent line</span><span class="v" id="calcTangentEq">—</span></div>
+
+          <hr style="border:none;border-top:1px solid var(--border);margin:0.2rem 0;">
+
+          <div>
+            <span class="field-label">Definite integral ∫ f(x)dx</span>
+            <div class="row">
+              <input type="number" id="boundA" value="-2" step="0.5" aria-label="Lower bound a">
+              <input type="number" id="boundB" value="2" step="0.5" aria-label="Upper bound b">
+            </div>
+          </div>
+          <div class="toggle-row">
+            <label for="areaToggle">Shade area under curve</label>
+            <div class="switch"><input type="checkbox" id="areaToggle" checked><span class="track"></span></div>
+          </div>
+          <div class="stat-line"><span class="k">∫ from a to b</span><span class="v" id="calcIntegral">—</span></div>
+
+          <hr style="border:none;border-top:1px solid var(--border);margin:0.2rem 0;">
+
+          <div>
+            <span class="field-label">Critical points in view</span>
+            <div class="critical-list" id="criticalList"></div>
+          </div>
+        </div>
+
+        <!-- ---- 3D PANEL ---- -->
+        <div class="panel-view" id="view-three">
+          <div class="hint">Plot a surface <b style="color:var(--brass-bright)">z = f(x, y)</b> and drag it to rotate — scroll to zoom.</div>
+
+          <div>
+            <span class="field-label">z = f(x, y)</span>
+            <div class="row">
+              <input type="text" id="fn3dInput" value="sin(sqrt(x*x+y*y))">
+              <button class="btn primary" id="fn3dBtn">Plot</button>
+            </div>
+          </div>
+
+          <div class="row wrap" id="preset3dRow">
+            <div class="preset-chip" data-fn3="sin(sqrt(x*x+y*y))">Ripple</div>
+            <div class="preset-chip" data-fn3="x*x - y*y">Saddle</div>
+            <div class="preset-chip" data-fn3="x*x + y*y">Paraboloid</div>
+            <div class="preset-chip" data-fn3="exp(-(x*x+y*y)/4) * 3">Gaussian</div>
+            <div class="preset-chip" data-fn3="x*x*x - 3*x*y*y">Monkey saddle</div>
+            <div class="preset-chip" data-fn3="sin(x) * cos(y)">Weave</div>
+          </div>
+
+          <div class="mini-canvas-wrap">
+            <canvas id="canvas3d"></canvas>
+          </div>
+
+          <div class="row wrap" style="justify-content:space-between;">
+            <div class="seg-group" id="renderModeGroup">
+              <button class="seg-btn active" data-mode="surface">Surface</button>
+              <button class="seg-btn" data-mode="wire">Wire</button>
+              <button class="seg-btn" data-mode="points">Points</button>
+            </div>
+            <div class="seg-group" id="resGroup">
+              <button class="seg-btn" data-res="16">Low</button>
+              <button class="seg-btn active" data-res="26">Med</button>
+              <button class="seg-btn" data-res="40">High</button>
+            </div>
+          </div>
+
+          <div class="toggle-row">
+            <label for="autoRotateToggle">Auto-rotate</label>
+            <div class="switch"><input type="checkbox" id="autoRotateToggle" checked><span class="track"></span></div>
+          </div>
+          <button class="btn ghost" id="reset3dBtn">Reset view</button>
+
+          <hr style="border:none;border-top:1px solid var(--border);margin:0.2rem 0;">
+
+          <div>
+            <span class="field-label">Probe point (x₀, y₀)</span>
+            <div class="probe-grid">
+              <input type="number" id="probeX" value="1" step="0.5" aria-label="x0">
+              <input type="number" id="probeY" value="1" step="0.5" aria-label="y0">
+            </div>
+          </div>
+          <div class="stat-line"><span class="k">z(x₀,y₀)</span><span class="v" id="probeZ">—</span></div>
+          <div class="stat-line"><span class="k">∂z/∂x</span><span class="v" id="probeDx">—</span></div>
+          <div class="stat-line"><span class="k">∂z/∂y</span><span class="v" id="probeDy">—</span></div>
+
+          <hr style="border:none;border-top:1px solid var(--border);margin:0.2rem 0;">
+
+          <div class="complex-block">
+            <span class="field-label">Complex numbers</span>
+            <div class="complex-inputs">
+              <input type="text" id="cplxA" value="3+4i" placeholder="a+bi">
+              <input type="text" id="cplxB" value="1-2i" placeholder="a+bi">
+            </div>
+            <div class="row wrap" id="cplxOps">
+              <button class="btn" data-op="add">z₁+z₂</button>
+              <button class="btn" data-op="sub">z₁−z₂</button>
+              <button class="btn" data-op="mul">z₁×z₂</button>
+              <button class="btn" data-op="div">z₁÷z₂</button>
+              <button class="btn" data-op="conj">conj(z₁)</button>
+              <button class="btn" data-op="mod">|z₁|</button>
+              <button class="btn" data-op="arg">arg(z₁)°</button>
+              <button class="btn" data-op="polar">z₁ polar</button>
+            </div>
+            <div class="complex-result" id="cplxResult">—</div>
+          </div>
+        </div>
+
+        <!-- ---- CALCULATOR PANEL ---- -->
+        <div class="panel-view" id="view-calc">
+          <div class="calc-display">
+            <div class="expr" id="calcExpr">&nbsp;</div>
+            <div class="result" id="calcResult">0</div>
+          </div>
+          <div class="calc-grid" id="calcButtons">
+            <button data-v="sin(">sin</button>
+            <button data-v="cos(">cos</button>
+            <button data-v="tan(">tan</button>
+            <button data-v="⌫" class="danger">⌫</button>
+
+            <button data-v="sqrt(">√</button>
+            <button data-v="^">xʸ</button>
+            <button data-v="ln(">ln</button>
+            <button data-v="C" class="danger">C</button>
+
+            <button data-v="7">7</button>
+            <button data-v="8">8</button>
+            <button data-v="9">9</button>
+            <button data-v="/" class="op">÷</button>
+
+            <button data-v="4">4</button>
+            <button data-v="5">5</button>
+            <button data-v="6">6</button>
+            <button data-v="*" class="op">×</button>
+
+            <button data-v="1">1</button>
+            <button data-v="2">2</button>
+            <button data-v="3">3</button>
+            <button data-v="-" class="op">−</button>
+
+            <button data-v="0">0</button>
+            <button data-v=".">.</button>
+            <button data-v="pi">π</button>
+            <button data-v="+" class="op">+</button>
+
+            <button data-v="(">(</button>
+            <button data-v=")">)</button>
+            <button data-v="e">e</button>
+            <button data-v="=" class="eq">=</button>
+          </div>
+        </div>
+
+        <!-- ---- NOTES PANEL ---- -->
+        <div class="panel-view" id="view-notes">
+          <div class="hint">Jot equations and Slate will check your arithmetic, or solve for a single unknown — <b style="color:var(--brass-bright)">entirely offline, no AI API involved</b>. Notes live only in this tab; use Export to keep a copy.</div>
+
+          <div class="notes-toolbar">
+            <span class="field-label" style="margin-bottom:0;">Your notes</span>
+            <button class="btn primary" id="addNoteBtn">+ New</button>
+          </div>
+          <div class="notes-list" id="notesList"></div>
+
+          <input type="text" id="noteTitle" placeholder="Note title" style="font-family:var(--font-body); font-weight:600;">
+          <textarea id="noteContent" placeholder="Write freely. Try a line like:&#10;2x + 5 = 15&#10;or: 12 * 4 = 46"></textarea>
+
+          <div class="row wrap">
+            <button class="btn primary" id="checkMathBtn" style="flex:1;">Check my math</button>
+            <button class="btn" id="exportNotesBtn">Export</button>
+            <label class="file-input-label" for="importNotesInput">Import</label>
+            <input type="file" id="importNotesInput" accept="application/json" style="display:none;">
+          </div>
+
+          <div class="check-results" id="checkResults"></div>
+        </div>
+
+        <!-- ---- REFERENCE PANEL ---- -->
+        <div class="panel-view" id="view-ref">
+          <div class="ref-card">
+            <h4>Derivative rules</h4>
+            <div class="ref-row"><span>d/dx [xⁿ]</span><span>n·xⁿ⁻¹</span></div>
+            <div class="ref-row"><span>d/dx [sin x]</span><span>cos x</span></div>
+            <div class="ref-row"><span>d/dx [cos x]</span><span>−sin x</span></div>
+            <div class="ref-row"><span>d/dx [eˣ]</span><span>eˣ</span></div>
+            <div class="ref-row"><span>d/dx [ln x]</span><span>1/x</span></div>
+            <div class="ref-row"><span>d/dx [f·g]</span><span>f′g + fg′</span></div>
+            <div class="ref-row"><span>d/dx [f/g]</span><span>(f′g − fg′)/g²</span></div>
+          </div>
+          <div class="ref-card">
+            <h4>Integral rules</h4>
+            <div class="ref-row"><span>∫ xⁿ dx</span><span>xⁿ⁺¹/(n+1) + C</span></div>
+            <div class="ref-row"><span>∫ 1/x dx</span><span>ln|x| + C</span></div>
+            <div class="ref-row"><span>∫ eˣ dx</span><span>eˣ + C</span></div>
+            <div class="ref-row"><span>∫ sin x dx</span><span>−cos x + C</span></div>
+            <div class="ref-row"><span>∫ cos x dx</span><span>sin x + C</span></div>
+          </div>
+          <div class="ref-card">
+            <h4>Complex numbers</h4>
+            <div class="ref-row"><span>i²</span><span>−1</span></div>
+            <div class="ref-row"><span>|a+bi|</span><span>√(a²+b²)</span></div>
+            <div class="ref-row"><span>arg(a+bi)</span><span>atan2(b, a)</span></div>
+          </div>
+          <div class="ref-card">
+            <h4>Reading this slate</h4>
+            <div class="hint">Scroll to zoom, drag to pan or rotate, click the 2D graph to drop an analysis point. Hollow rings mark critical points where f′ = 0.</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ================= MAIN ================= -->
+    <main class="main-col">
+      <div class="canvas-panel">
+        <div class="canvas-toolbar">
+          <div class="coord-readout" id="coordReadout">x: <b>—</b>&nbsp;&nbsp;y: <b>—</b></div>
+          <div class="zoom-controls">
+            <button id="zoomOut" title="Zoom out" aria-label="Zoom out">−</button>
+            <button id="zoomReset" title="Reset view" aria-label="Reset view">⟲</button>
+            <button id="zoomIn" title="Zoom in" aria-label="Zoom in">+</button>
+          </div>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="graphCanvas"></canvas>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-box"><h3>Integral (a→b)</h3><p id="statIntegral">0.000</p></div>
+        <div class="stat-box"><h3>Max in view</h3><p id="statMax">—</p></div>
+        <div class="stat-box"><h3>Min in view</h3><p id="statMin">—</p></div>
+        <div class="stat-box"><h3>Roots in view</h3><p id="statRoots">—</p></div>
+      </div>
+    </main>
+  </div>
+
+  <footer>Built for studying, one curve at a time.</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     MATH ENGINE — safe-ish expression evaluation with friendly
+     function names (sin, cos, sqrt, ...) and ^ for power.
+  ============================================================ */
+  const MathEngine = {
+    compile(expr, varName){
+      varName = varName || 'x';
+      const cleaned = expr.trim().replace(/\^/g, '**');
+      // eslint-disable-next-line no-new-func
+      const fn = new Function(varName, `
+        const sin=Math.sin, cos=Math.cos, tan=Math.tan,
+              asin=Math.asin, acos=Math.acos, atan=Math.atan,
+              sqrt=Math.sqrt, abs=Math.abs, exp=Math.exp,
+              log=Math.log10, ln=Math.log, pow=Math.pow,
+              min=Math.min, max=Math.max, floor=Math.floor,
+              ceil=Math.ceil, round=Math.round,
+              pi=Math.PI, e=Math.E;
+        return (${cleaned});
+      `);
+      return fn;
+    },
+    compileXY(expr){
+      const cleaned = expr.trim().replace(/\^/g, '**');
+      // eslint-disable-next-line no-new-func
+      const fn = new Function('x', 'y', `
+        const sin=Math.sin, cos=Math.cos, tan=Math.tan,
+              asin=Math.asin, acos=Math.acos, atan=Math.atan,
+              sqrt=Math.sqrt, abs=Math.abs, exp=Math.exp,
+              log=Math.log10, ln=Math.log, pow=Math.pow,
+              min=Math.min, max=Math.max, floor=Math.floor,
+              ceil=Math.ceil, round=Math.round,
+              pi=Math.PI, e=Math.E;
+        return (${cleaned});
+      `);
+      return fn;
+    },
+    evaluate(compiledFn, x){
+      try{
+        const y = compiledFn(x);
+        return (typeof y === 'number' && isFinite(y)) ? y : NaN;
+      }catch(err){ return NaN; }
+    },
+    evaluateXY(compiledFn, x, y){
+      try{
+        const z = compiledFn(x, y);
+        return (typeof z === 'number' && isFinite(z)) ? z : NaN;
+      }catch(err){ return NaN; }
+    },
+    derivative(compiledFn, x, h){
+      h = h || 1e-4;
+      const y1 = MathEngine.evaluate(compiledFn, x + h);
+      const y2 = MathEngine.evaluate(compiledFn, x - h);
+      if(isNaN(y1) || isNaN(y2)) return NaN;
+      return (y1 - y2) / (2*h);
+    },
+    simpson(compiledFn, a, b, n){
+      n = n || 400;
+      if(n % 2 !== 0) n++;
+      if(a === b) return 0;
+      const dir = a > b ? -1 : 1;
+      const lo = Math.min(a,b), hi = Math.max(a,b);
+      const h = (hi - lo) / n;
+      let sum = MathEngine.evaluate(compiledFn, lo) + MathEngine.evaluate(compiledFn, hi);
+      if(isNaN(sum)) sum = 0;
+      for(let i=1; i<n; i++){
+        const xi = lo + i*h;
+        let yi = MathEngine.evaluate(compiledFn, xi);
+        if(isNaN(yi)) yi = 0;
+        sum += yi * (i % 2 === 0 ? 2 : 4);
+      }
+      return dir * (h/3) * sum;
+    }
+  };
+
+  /* generic numeric formatter, used everywhere below */
+  function fmt(n){
+    if(n === null || n === undefined || isNaN(n)) return '—';
+    if(Math.abs(n) < 1e-9) n = 0;
+    return Number(n.toFixed(4)).toString();
+  }
+
+  /* ============================================================
+     PALETTE for successive curves
+  ============================================================ */
+  const CURVE_COLORS = ['#d1a35c', '#8ecae6', '#e8a0b4', '#9fd8a3', '#c9a1e0', '#e0af6b'];
+  let colorCursor = 0;
+  function nextColor(){
+    const c = CURVE_COLORS[colorCursor % CURVE_COLORS.length];
+    colorCursor++;
+    return c;
+  }
+
+  /* ============================================================
+     STATE (2D curves)
+  ============================================================ */
+  let curves = []; // {id, expr, color, visible, compiled, error}
+  let activeCurveId = null;
+  let idSeq = 1;
+
+  function makeCurve(expr){
+    const c = { id: idSeq++, expr, color: nextColor(), visible: true, compiled: null, error: false };
+    try{ c.compiled = MathEngine.compile(expr); c.error = false; }
+    catch(err){ c.error = true; }
+    return c;
+  }
+
+  function addCurve(expr){
+    const c = makeCurve(expr);
+    curves.push(c);
+    activeCurveId = c.id;
+    renderFnList();
+    redrawAll();
+  }
+
+  function removeCurve(id){
+    curves = curves.filter(c => c.id !== id);
+    if(activeCurveId === id) activeCurveId = curves.length ? curves[curves.length-1].id : null;
+    renderFnList();
+    redrawAll();
+  }
+
+  function getActiveCurve(){
+    return curves.find(c => c.id === activeCurveId) || curves[0] || null;
+  }
+
+  /* ============================================================
+     SIDEBAR: function list rendering
+  ============================================================ */
+  const fnListEl = document.getElementById('fnList');
+
+  function renderFnList(){
+    fnListEl.innerHTML = '';
+    curves.forEach(c => {
+      const chip = document.createElement('div');
+      chip.className = 'fn-chip' + (c.id === activeCurveId ? ' active-fn' : '');
+      chip.style.color = c.color;
+
+      const swatch = document.createElement('div');
+      swatch.className = 'fn-swatch';
+      swatch.style.background = c.color;
+      swatch.style.color = c.color;
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = c.expr;
+      input.spellcheck = false;
+      input.addEventListener('change', () => {
+        c.expr = input.value;
+        try{ c.compiled = MathEngine.compile(c.expr); c.error = false; }
+        catch(err){ c.error = true; }
+        redrawAll();
+      });
+      input.addEventListener('click', (e) => e.stopPropagation());
+
+      const visBtn = document.createElement('button');
+      visBtn.className = 'vis-toggle';
+      visBtn.textContent = c.visible ? '👁' : '—';
+      visBtn.title = 'Toggle visibility';
+      visBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        c.visible = !c.visible;
+        renderFnList();
+        redrawAll();
+      });
+
+      const delBtn = document.createElement('button');
+      delBtn.textContent = '✕';
+      delBtn.title = 'Remove curve';
+      delBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        removeCurve(c.id);
+      });
+
+      chip.addEventListener('click', () => {
+        activeCurveId = c.id;
+        renderFnList();
+        redrawAll();
+      });
+
+      chip.appendChild(swatch);
+      chip.appendChild(input);
+      chip.appendChild(visBtn);
+      chip.appendChild(delBtn);
+      fnListEl.appendChild(chip);
+    });
+  }
+
+  document.getElementById('addFnBtn').addEventListener('click', () => {
+    const val = document.getElementById('fnInput').value.trim();
+    if(val) addCurve(val);
+  });
+  document.getElementById('fnInput').addEventListener('keydown', (e) => {
+    if(e.key === 'Enter'){
+      const val = e.target.value.trim();
+      if(val) addCurve(val);
+    }
+  });
+
+  document.getElementById('presetRow').addEventListener('click', (e) => {
+    const chip = e.target.closest('.preset-chip');
+    if(!chip) return;
+    addCurve(chip.dataset.fn);
+  });
+
+  /* ============================================================
+     TABS
+  ============================================================ */
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  const panelViews = {
+    plot: document.getElementById('view-plot'),
+    calculus: document.getElementById('view-calculus'),
+    three: document.getElementById('view-three'),
+    calc: document.getElementById('view-calc'),
+    notes: document.getElementById('view-notes'),
+    ref: document.getElementById('view-ref'),
+  };
+  tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabButtons.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
+      btn.classList.add('active'); btn.setAttribute('aria-selected','true');
+      Object.values(panelViews).forEach(v => v.classList.remove('active'));
+      panelViews[btn.dataset.tab].classList.add('active');
+    });
+  });
+
+  /* ============================================================
+     GRAPHER — custom 2D canvas plotting engine
+  ============================================================ */
+  const canvas = document.getElementById('graphCanvas');
+  const ctx = canvas.getContext('2d');
+  const wrap = canvas.parentElement;
+
+  let view = { xMin: -6, xMax: 6, yMin: -4, yMax: 4 };
+  let dpr = window.devicePixelRatio || 1;
+  let cw = 0, ch = 0;
+  let hoverWorld = null;
+
+  function resizeCanvas(){
+    const rect = wrap.getBoundingClientRect();
+    dpr = window.devicePixelRatio || 1;
+    cw = rect.width; ch = rect.height;
+    canvas.width = Math.round(cw * dpr);
+    canvas.height = Math.round(ch * dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    redrawAll();
+  }
+  window.addEventListener('resize', resizeCanvas);
+
+  function worldToScreenX(x){ return (x - view.xMin) / (view.xMax - view.xMin) * cw; }
+  function worldToScreenY(y){ return ch - (y - view.yMin) / (view.yMax - view.yMin) * ch; }
+  function screenToWorldX(px){ return view.xMin + (px / cw) * (view.xMax - view.xMin); }
+  function screenToWorldY(py){ return view.yMin + ((ch - py) / ch) * (view.yMax - view.yMin); }
+
+  function niceStep(range){
+    const rough = range / 10;
+    const mag = Math.pow(10, Math.floor(Math.log10(rough)));
+    const norm = rough / mag;
+    let step;
+    if(norm < 1.5) step = 1;
+    else if(norm < 3.5) step = 2;
+    else if(norm < 7.5) step = 5;
+    else step = 10;
+    return step * mag;
+  }
+
+  function drawGrid(){
+    ctx.clearRect(0,0,cw,ch);
+
+    const xRange = view.xMax - view.xMin;
+    const yRange = view.yMax - view.yMin;
+    const stepX = niceStep(xRange);
+    const stepY = niceStep(yRange);
+
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(238,241,234,0.06)';
+    ctx.font = '11px "JetBrains Mono", monospace';
+    ctx.fillStyle = 'rgba(169,179,172,0.75)';
+
+    let startX = Math.ceil(view.xMin / stepX) * stepX;
+    for(let x = startX; x <= view.xMax; x += stepX){
+      const sx = worldToScreenX(x);
+      ctx.beginPath();
+      ctx.moveTo(sx, 0); ctx.lineTo(sx, ch);
+      ctx.stroke();
+      if(Math.abs(x) > stepX*0.01){
+        ctx.fillText(Number(x.toFixed(4)).toString(), sx + 4, worldToScreenY(0) + 14 < ch - 4 ? worldToScreenY(0) + 14 : ch - 6);
+      }
+    }
+    let startY = Math.ceil(view.yMin / stepY) * stepY;
+    for(let y = startY; y <= view.yMax; y += stepY){
+      const sy = worldToScreenY(y);
+      ctx.beginPath();
+      ctx.moveTo(0, sy); ctx.lineTo(cw, sy);
+      ctx.stroke();
+      if(Math.abs(y) > stepY*0.01){
+        ctx.fillText(Number(y.toFixed(4)).toString(), worldToScreenX(0) + 4, sy - 4);
+      }
+    }
+
+    ctx.strokeStyle = 'rgba(238,241,234,0.35)';
+    ctx.lineWidth = 1.4;
+    const ax0 = worldToScreenX(0), ay0 = worldToScreenY(0);
+    if(ax0 >= 0 && ax0 <= cw){
+      ctx.beginPath(); ctx.moveTo(ax0, 0); ctx.lineTo(ax0, ch); ctx.stroke();
+    }
+    if(ay0 >= 0 && ay0 <= ch){
+      ctx.beginPath(); ctx.moveTo(0, ay0); ctx.lineTo(cw, ay0); ctx.stroke();
+    }
+  }
+
+  function strokeChalkPath(points, color, width){
+    for(let pass=0; pass<2; pass++){
+      ctx.beginPath();
+      ctx.strokeStyle = color;
+      ctx.globalAlpha = pass === 0 ? 0.95 : 0.25;
+      ctx.lineWidth = pass === 0 ? width : width + 1.6;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      let started = false;
+      points.forEach(p => {
+        if(p === null){ started = false; return; }
+        const jitter = pass === 1 ? (Math.random()-0.5)*0.6 : 0;
+        if(!started){ ctx.moveTo(p[0]+jitter, p[1]+jitter); started = true; }
+        else ctx.lineTo(p[0]+jitter, p[1]+jitter);
+      });
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function sampleCurve(curve){
+    const pts = [];
+    const samples = Math.max(400, Math.floor(cw));
+    for(let i=0; i<=samples; i++){
+      const x = view.xMin + (i/samples) * (view.xMax - view.xMin);
+      const y = MathEngine.evaluate(curve.compiled, x);
+      if(isNaN(y) || y < view.yMin - (view.yMax-view.yMin) || y > view.yMax + (view.yMax-view.yMin)){
+        pts.push(null);
+      }else{
+        pts.push([worldToScreenX(x), worldToScreenY(y)]);
+      }
+    }
+    return pts;
+  }
+
+  function findRootsAndCritical(curve){
+    const roots = [];
+    const critical = [];
+    const samples = 900;
+    let prevY = null, prevDY = null, prevX = null;
+    for(let i=0; i<=samples; i++){
+      const x = view.xMin + (i/samples) * (view.xMax - view.xMin);
+      const y = MathEngine.evaluate(curve.compiled, x);
+      const dy = MathEngine.derivative(curve.compiled, x);
+      if(prevY !== null && !isNaN(prevY) && !isNaN(y)){
+        if((prevY < 0 && y >= 0) || (prevY > 0 && y <= 0)){
+          roots.push((prevX + x)/2);
+        }
+      }
+      if(prevDY !== null && !isNaN(prevDY) && !isNaN(dy)){
+        if((prevDY < 0 && dy >= 0) || (prevDY > 0 && dy <= 0)){
+          const cx = (prevX + x)/2;
+          const cy = MathEngine.evaluate(curve.compiled, cx);
+          critical.push({ x: cx, y: cy, kind: dy > prevDY ? 'min' : 'max' });
+        }
+      }
+      prevY = y; prevDY = dy; prevX = x;
+    }
+    return { roots, critical };
+  }
+
+  function drawAreaShade(curve, a, b){
+    const lo = Math.min(a,b), hi = Math.max(a,b);
+    if(lo === hi) return;
+    const samples = 200;
+    ctx.beginPath();
+    ctx.moveTo(worldToScreenX(lo), worldToScreenY(0));
+    for(let i=0; i<=samples; i++){
+      const x = lo + (i/samples)*(hi-lo);
+      const y = MathEngine.evaluate(curve.compiled, x);
+      ctx.lineTo(worldToScreenX(x), worldToScreenY(isNaN(y)?0:y));
+    }
+    ctx.lineTo(worldToScreenX(hi), worldToScreenY(0));
+    ctx.closePath();
+    ctx.fillStyle = curve.color;
+    ctx.globalAlpha = 0.18;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  function drawPoint(x, y, color, radius, hollow){
+    const sx = worldToScreenX(x), sy = worldToScreenY(y);
+    ctx.beginPath();
+    ctx.arc(sx, sy, radius, 0, Math.PI*2);
+    if(hollow){
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }else{
+      ctx.fillStyle = color;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 10;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+  }
+
+  let lastCriticalForActive = [];
+
+  function redrawAll(){
+    if(cw === 0) return;
+    drawGrid();
+
+    const active = getActiveCurve();
+    const areaOn = document.getElementById('areaToggle').checked;
+    const tangentOn = document.getElementById('tangentToggle').checked;
+    const a = parseFloat(document.getElementById('boundA').value);
+    const b = parseFloat(document.getElementById('boundB').value);
+
+    if(active && !active.error && areaOn && !isNaN(a) && !isNaN(b)){
+      drawAreaShade(active, a, b);
+    }
+
+    curves.forEach(c => {
+      if(!c.visible || c.error || !c.compiled) return;
+      const pts = sampleCurve(c);
+      strokeChalkPath(pts, c.color, c.id === activeCurveId ? 2.6 : 1.8);
+    });
+
+    if(active && !active.error){
+      const x0 = parseFloat(document.getElementById('pointX').value);
+      if(!isNaN(x0)){
+        const y0 = MathEngine.evaluate(active.compiled, x0);
+        if(!isNaN(y0)){
+          if(tangentOn){
+            const slope = MathEngine.derivative(active.compiled, x0);
+            if(!isNaN(slope)){
+              const x1 = view.xMin, x2 = view.xMax;
+              const y1 = y0 + slope*(x1-x0), y2 = y0 + slope*(x2-x0);
+              ctx.beginPath();
+              ctx.strokeStyle = '#eef1ea';
+              ctx.globalAlpha = 0.55;
+              ctx.setLineDash([6,5]);
+              ctx.lineWidth = 1.6;
+              ctx.moveTo(worldToScreenX(x1), worldToScreenY(y1));
+              ctx.lineTo(worldToScreenX(x2), worldToScreenY(y2));
+              ctx.stroke();
+              ctx.setLineDash([]);
+              ctx.globalAlpha = 1;
+            }
+          }
+          drawPoint(x0, y0, '#eef1ea', 5, false);
+        }
+      }
+
+      const rc = findRootsAndCritical(active);
+      lastCriticalForActive = rc.critical;
+      rc.critical.forEach(pt => {
+        if(pt.x >= view.xMin && pt.x <= view.xMax) drawPoint(pt.x, pt.y, active.color, 5, true);
+      });
+
+      updateCalculusPanel(active, rc);
+      updateStats(active, rc, a, b);
+    } else {
+      updateCalculusPanel(null, {roots:[], critical:[]});
+      updateStats(null, {roots:[], critical:[]}, a, b);
+    }
+  }
+
+  /* ---------- calculus panel + stats readouts ---------- */
+  function updateCalculusPanel(curve, rc){
+    const fxEl = document.getElementById('calcFx');
+    const slopeEl = document.getElementById('calcSlope');
+    const tanEl = document.getElementById('calcTangentEq');
+    const intEl = document.getElementById('calcIntegral');
+    const listEl = document.getElementById('criticalList');
+
+    if(!curve || curve.error){
+      fxEl.textContent = '—'; slopeEl.textContent = '—'; tanEl.textContent = '—'; intEl.textContent = '—';
+      listEl.innerHTML = '<div class="hint">Add a curve to begin.</div>';
+      return;
+    }
+
+    const x0 = parseFloat(document.getElementById('pointX').value);
+    const y0 = MathEngine.evaluate(curve.compiled, x0);
+    const slope = MathEngine.derivative(curve.compiled, x0);
+    fxEl.textContent = fmt(y0);
+    slopeEl.textContent = fmt(slope);
+    if(!isNaN(y0) && !isNaN(slope)){
+      const b0 = y0 - slope*x0;
+      tanEl.textContent = `y = ${fmt(slope)}x ${b0>=0?'+':'−'} ${fmt(Math.abs(b0))}`;
+    } else {
+      tanEl.textContent = '—';
+    }
+
+    const a = parseFloat(document.getElementById('boundA').value);
+    const b = parseFloat(document.getElementById('boundB').value);
+    if(!isNaN(a) && !isNaN(b)){
+      intEl.textContent = fmt(MathEngine.simpson(curve.compiled, a, b));
+    } else {
+      intEl.textContent = '—';
+    }
+
+    if(rc.critical.length === 0){
+      listEl.innerHTML = '<div class="hint">None found in the current view.</div>';
+    } else {
+      listEl.innerHTML = '';
+      rc.critical.forEach(pt => {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `<span class="tag">${pt.kind === 'max' ? '▲ max' : '▼ min'}</span>(${fmt(pt.x)}, ${fmt(pt.y)})`;
+        listEl.appendChild(div);
+      });
+    }
+  }
+
+  function updateStats(curve, rc, a, b){
+    const statInt = document.getElementById('statIntegral');
+    const statMax = document.getElementById('statMax');
+    const statMin = document.getElementById('statMin');
+    const statRoots = document.getElementById('statRoots');
+
+    if(!curve || curve.error){
+      statInt.textContent = '0.000'; statMax.textContent = '—'; statMin.textContent = '—'; statRoots.textContent = '—';
+      return;
+    }
+
+    statInt.textContent = (!isNaN(a) && !isNaN(b)) ? fmt(MathEngine.simpson(curve.compiled, a, b)) : '—';
+
+    let max = -Infinity, min = Infinity;
+    const samples = 500;
+    for(let i=0;i<=samples;i++){
+      const x = view.xMin + (i/samples)*(view.xMax-view.xMin);
+      const y = MathEngine.evaluate(curve.compiled, x);
+      if(!isNaN(y)){ if(y>max) max=y; if(y<min) min=y; }
+    }
+    statMax.textContent = isFinite(max) ? fmt(max) : '—';
+    statMin.textContent = isFinite(min) ? fmt(min) : '—';
+    statRoots.textContent = rc.roots.length ? rc.roots.map(fmt).join(', ') : '—';
+  }
+
+  /* ---------- 2D pan / zoom / hover interactions ---------- */
+  let dragging = false, dragStart = null, viewStart = null;
+
+  canvas.addEventListener('mousedown', (e) => {
+    dragging = true;
+    const rect = canvas.getBoundingClientRect();
+    dragStart = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    viewStart = { ...view };
+  });
+
+  window.addEventListener('mouseup', () => { dragging = false; });
+
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    hoverWorld = { x: screenToWorldX(mx), y: screenToWorldY(my) };
+    document.getElementById('coordReadout').innerHTML =
+      `x: <b>${fmt(hoverWorld.x)}</b>&nbsp;&nbsp;y: <b>${fmt(hoverWorld.y)}</b>`;
+
+    if(dragging && dragStart){
+      const dx = (mx - dragStart.x) / cw * (viewStart.xMax - viewStart.xMin);
+      const dy = (my - dragStart.y) / ch * (viewStart.yMax - viewStart.yMin);
+      view.xMin = viewStart.xMin - dx; view.xMax = viewStart.xMax - dx;
+      view.yMin = viewStart.yMin + dy; view.yMax = viewStart.yMax + dy;
+      redrawAll();
+    }
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    document.getElementById('coordReadout').innerHTML = 'x: <b>—</b>&nbsp;&nbsp;y: <b>—</b>';
+  });
+
+  function zoomAt(factor, centerX, centerY){
+    const wx = centerX, wy = centerY;
+    view.xMin = wx + (view.xMin - wx) * factor;
+    view.xMax = wx + (view.xMax - wx) * factor;
+    view.yMin = wy + (view.yMin - wy) * factor;
+    view.yMax = wy + (view.yMax - wy) * factor;
+    redrawAll();
+  }
+
+  canvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    const wx = screenToWorldX(mx), wy = screenToWorldY(my);
+    zoomAt(e.deltaY > 0 ? 1.12 : 0.89, wx, wy);
+  }, { passive:false });
+
+  canvas.addEventListener('click', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const wx = screenToWorldX(mx);
+    document.getElementById('pointX').value = Number(wx.toFixed(3));
+    redrawAll();
+  });
+
+  document.getElementById('zoomIn').addEventListener('click', () => zoomAt(0.8, (view.xMin+view.xMax)/2, (view.yMin+view.yMax)/2));
+  document.getElementById('zoomOut').addEventListener('click', () => zoomAt(1.25, (view.xMin+view.xMax)/2, (view.yMin+view.yMax)/2));
+  document.getElementById('zoomReset').addEventListener('click', () => { view = { xMin:-6, xMax:6, yMin:-4, yMax:4 }; redrawAll(); });
+
+  ['pointX','boundA','boundB'].forEach(id => {
+    document.getElementById(id).addEventListener('input', redrawAll);
+  });
+  document.getElementById('tangentToggle').addEventListener('change', redrawAll);
+  document.getElementById('areaToggle').addEventListener('change', redrawAll);
+  document.getElementById('snapBtn').addEventListener('click', () => {
+    const active = getActiveCurve();
+    if(!active || !lastCriticalForActive.length) return;
+    let x0 = parseFloat(document.getElementById('pointX').value);
+    let closest = lastCriticalForActive[0];
+    let bestDist = Infinity;
+    lastCriticalForActive.forEach(pt => {
+      const d = Math.abs(pt.x - x0);
+      if(d < bestDist){ bestDist = d; closest = pt; }
+    });
+    document.getElementById('pointX').value = Number(closest.x.toFixed(3));
+    redrawAll();
+  });
+
+  /* ============================================================
+     CALCULATOR
+  ============================================================ */
+  let calcExpr = '';
+  const calcExprEl = document.getElementById('calcExpr');
+  const calcResultEl = document.getElementById('calcResult');
+
+  function calcDisplayExpr(s){
+    return s.replace(/\*/g, '×').replace(/\//g, '÷');
+  }
+
+  function evalCalc(expr){
+    try{
+      const compiled = MathEngine.compile(expr);
+      const val = compiled(0);
+      if(typeof val !== 'number' || !isFinite(val)) return null;
+      return val;
+    }catch(err){ return null; }
+  }
+
+  document.getElementById('calcButtons').addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if(!btn) return;
+    const v = btn.dataset.v;
+
+    if(v === 'C'){
+      calcExpr = '';
+      calcExprEl.innerHTML = '&nbsp;';
+      calcResultEl.textContent = '0';
+      return;
+    }
+    if(v === '⌫'){
+      calcExpr = calcExpr.slice(0, -1);
+    } else if(v === '='){
+      const result = evalCalc(calcExpr || '0');
+      calcExprEl.textContent = calcDisplayExpr(calcExpr) + ' =';
+      calcResultEl.textContent = result === null ? 'Error' : Number(result.toFixed(8)).toString();
+      calcExpr = result === null ? calcExpr : String(result);
+      return;
+    } else {
+      calcExpr += v;
+    }
+    calcExprEl.textContent = calcExpr ? calcDisplayExpr(calcExpr) : '\u00A0';
+    const live = evalCalc(calcExpr);
+    calcResultEl.textContent = live === null ? (calcExpr ? '…' : '0') : Number(live.toFixed(8)).toString();
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if(!panelViews.calc.classList.contains('active')) return;
+    if(/^[0-9+\-*/.^()]$/.test(e.key)){
+      calcExpr += e.key;
+      calcExprEl.textContent = calcDisplayExpr(calcExpr);
+      const live = evalCalc(calcExpr);
+      calcResultEl.textContent = live === null ? '…' : Number(live.toFixed(8)).toString();
+    } else if(e.key === 'Enter'){
+      const result = evalCalc(calcExpr || '0');
+      calcExprEl.textContent = calcDisplayExpr(calcExpr) + ' =';
+      calcResultEl.textContent = result === null ? 'Error' : Number(result.toFixed(8)).toString();
+      calcExpr = result === null ? calcExpr : String(result);
+    } else if(e.key === 'Backspace'){
+      calcExpr = calcExpr.slice(0, -1);
+      calcExprEl.textContent = calcExpr || '\u00A0';
+    }
+  });
+
+  /* ============================================================
+     3D SURFACE RENDERER — custom rotate/zoom canvas engine
+  ============================================================ */
+  const Surface3D = (function(){
+    const canvas3d = document.getElementById('canvas3d');
+    const ctx3d = canvas3d.getContext('2d');
+    const wrap3d = canvas3d.parentElement;
+
+    const state = {
+      exprFn: null,
+      extent: 4,
+      resolution: 26,
+      mode: 'surface',
+      rotX: -0.6,
+      rotY: 0.6,
+      zoom: 1,
+      autoRotate: true,
+      dragging: false,
+      mesh: null,
+      zScale: 1,
+      probe: null
+    };
+
+    function evalXY(fn, x, y){
+      try{
+        const z = fn(x, y);
+        return (typeof z === 'number' && isFinite(z)) ? z : NaN;
+      }catch(err){ return NaN; }
+    }
+
+    function buildMesh(){
+      if(!state.exprFn) return;
+      const N = state.resolution;
+      const E = state.extent;
+      const rows = [];
+      let maxAbsZ = 0;
+      for(let i=0;i<=N;i++){
+        const x = -E + (i/N)*2*E;
+        const row = [];
+        for(let j=0;j<=N;j++){
+          const y = -E + (j/N)*2*E;
+          const z = evalXY(state.exprFn, x, y);
+          const zz = isNaN(z) ? 0 : z;
+          if(Math.abs(zz) > maxAbsZ) maxAbsZ = Math.abs(zz);
+          row.push({x, y, z: zz});
+        }
+        rows.push(row);
+      }
+      state.zScale = maxAbsZ > 0.0001 ? (E / maxAbsZ) : 1;
+      state.mesh = rows;
+    }
+
+    function compileAndBuild(expr){
+      try{
+        state.exprFn = MathEngine.compileXY(expr);
+        buildMesh();
+        return true;
+      }catch(err){
+        state.exprFn = null;
+        return false;
+      }
+    }
+
+    function hexToRgb(hex){
+      hex = hex.replace('#','');
+      return { r: parseInt(hex.substring(0,2),16), g: parseInt(hex.substring(2,4),16), b: parseInt(hex.substring(4,6),16) };
+    }
+    function lerpColor(c1, c2, t){
+      const a = hexToRgb(c1), b = hexToRgb(c2);
+      const r = Math.round(a.r + (b.r-a.r)*t);
+      const g = Math.round(a.g + (b.g-a.g)*t);
+      const bl = Math.round(a.b + (b.b-a.b)*t);
+      return `rgb(${r},${g},${bl})`;
+    }
+    function heightColor(z, maxAbsZ){
+      const t = maxAbsZ > 0 ? (z / maxAbsZ) : 0;
+      if(t >= 0) return lerpColor('#d1a35c', '#eef1ea', Math.min(t,1));
+      return lerpColor('#d1a35c', '#8ecae6', Math.min(-t,1));
+    }
+
+    function project(p, cx, cy, scale){
+      const nx = p.x, ny = p.y, nz = p.z * state.zScale;
+      const cosY = Math.cos(state.rotY), sinY = Math.sin(state.rotY);
+      const x1 = nx*cosY + nz*sinY;
+      const z1 = -nx*sinY + nz*cosY;
+      const cosX = Math.cos(state.rotX), sinX = Math.sin(state.rotX);
+      const y2 = ny*cosX - z1*sinX;
+      const z2 = ny*sinX + z1*cosX;
+      const dist = 10;
+      const camZ = z2 + dist;
+      const persp = dist / Math.max(camZ, 0.5);
+      const sx = cx + x1 * scale * persp;
+      const sy = cy - y2 * scale * persp;
+      return { x: sx, y: sy, depth: camZ };
+    }
+
+    function draw(){
+      const rect = wrap3d.getBoundingClientRect();
+      const dpr3 = window.devicePixelRatio || 1;
+      const w = rect.width, h = rect.height;
+      if(w === 0 || h === 0) return;
+      const targetW = Math.round(w*dpr3), targetH = Math.round(h*dpr3);
+      if(canvas3d.width !== targetW || canvas3d.height !== targetH){
+        canvas3d.width = targetW; canvas3d.height = targetH;
+      }
+      ctx3d.setTransform(dpr3,0,0,dpr3,0,0);
+      ctx3d.clearRect(0,0,w,h);
+      if(!state.mesh) return;
+
+      const cx = w/2, cy = h/2;
+      const baseScale = Math.min(w,h) / (state.extent * 2.6) * state.zoom;
+
+      const axisHalf = state.extent * 1.15;
+      const axisLines = [
+        { a:{x:-axisHalf,y:0,z:0}, b:{x:axisHalf,y:0,z:0} },
+        { a:{x:0,y:-axisHalf,z:0}, b:{x:0,y:axisHalf,z:0} },
+        { a:{x:0,y:0,z:-axisHalf/Math.max(state.zScale,0.0001)}, b:{x:0,y:0,z:axisHalf/Math.max(state.zScale,0.0001)} }
+      ];
+      axisLines.forEach(line => {
+        const p1 = project(line.a, cx, cy, baseScale);
+        const p2 = project(line.b, cx, cy, baseScale);
+        ctx3d.beginPath();
+        ctx3d.strokeStyle = 'rgba(209,163,92,0.45)';
+        ctx3d.lineWidth = 1;
+        ctx3d.moveTo(p1.x,p1.y); ctx3d.lineTo(p2.x,p2.y);
+        ctx3d.stroke();
+      });
+
+      const N = state.mesh.length - 1;
+      let maxAbsZ = 0.0001;
+      for(let i=0;i<=N;i++) for(let j=0;j<=N;j++){
+        const az = Math.abs(state.mesh[i][j].z);
+        if(az > maxAbsZ) maxAbsZ = az;
+      }
+
+      if(state.mode === 'points'){
+        const flat = [];
+        for(let i=0;i<=N;i++) for(let j=0;j<=N;j++){
+          const p = state.mesh[i][j];
+          flat.push({ proj: project(p, cx, cy, baseScale), z: p.z });
+        }
+        flat.sort((a,b)=>b.proj.depth - a.proj.depth);
+        flat.forEach(f => {
+          ctx3d.beginPath();
+          ctx3d.fillStyle = heightColor(f.z, maxAbsZ);
+          ctx3d.arc(f.proj.x, f.proj.y, 2, 0, Math.PI*2);
+          ctx3d.fill();
+        });
+      } else {
+        const quads = [];
+        for(let i=0;i<N;i++){
+          for(let j=0;j<N;j++){
+            const p00 = state.mesh[i][j], p10 = state.mesh[i+1][j], p11 = state.mesh[i+1][j+1], p01 = state.mesh[i][j+1];
+            const avgZ = (p00.z+p10.z+p11.z+p01.z)/4;
+            const proj00 = project(p00, cx, cy, baseScale);
+            const proj10 = project(p10, cx, cy, baseScale);
+            const proj11 = project(p11, cx, cy, baseScale);
+            const proj01 = project(p01, cx, cy, baseScale);
+            const depth = (proj00.depth+proj10.depth+proj11.depth+proj01.depth)/4;
+            quads.push({ pts:[proj00,proj10,proj11,proj01], depth, avgZ });
+          }
+        }
+        quads.sort((a,b)=>b.depth - a.depth);
+
+        quads.forEach(q => {
+          ctx3d.beginPath();
+          ctx3d.moveTo(q.pts[0].x, q.pts[0].y);
+          for(let k=1;k<4;k++) ctx3d.lineTo(q.pts[k].x, q.pts[k].y);
+          ctx3d.closePath();
+          if(state.mode === 'surface'){
+            const shade = Math.max(0.4, Math.min(1, 1 - (q.depth-6)/16));
+            ctx3d.fillStyle = heightColor(q.avgZ, maxAbsZ);
+            ctx3d.globalAlpha = shade;
+            ctx3d.fill();
+            ctx3d.globalAlpha = 1;
+            ctx3d.strokeStyle = 'rgba(12,16,18,0.35)';
+            ctx3d.lineWidth = 0.6;
+            ctx3d.stroke();
+          } else {
+            ctx3d.strokeStyle = heightColor(q.avgZ, maxAbsZ);
+            ctx3d.globalAlpha = 0.85;
+            ctx3d.lineWidth = 1;
+            ctx3d.stroke();
+            ctx3d.globalAlpha = 1;
+          }
+        });
+      }
+
+      if(state.probe){
+        const { x0, y0, z0 } = state.probe;
+        const base = project({x:x0,y:y0,z:0}, cx, cy, baseScale);
+        const top = project({x:x0,y:y0,z:z0}, cx, cy, baseScale);
+        ctx3d.beginPath();
+        ctx3d.setLineDash([3,3]);
+        ctx3d.strokeStyle = 'rgba(238,241,234,0.6)';
+        ctx3d.moveTo(base.x, base.y); ctx3d.lineTo(top.x, top.y);
+        ctx3d.stroke();
+        ctx3d.setLineDash([]);
+        ctx3d.beginPath();
+        ctx3d.fillStyle = '#eef1ea';
+        ctx3d.shadowColor = '#eef1ea';
+        ctx3d.shadowBlur = 10;
+        ctx3d.arc(top.x, top.y, 4.5, 0, Math.PI*2);
+        ctx3d.fill();
+        ctx3d.shadowBlur = 0;
+      }
+    }
+
+    function updateProbe(x0, y0){
+      if(!state.exprFn) return;
+      const z0 = evalXY(state.exprFn, x0, y0);
+      const h = 1e-4;
+      const dx = (evalXY(state.exprFn, x0+h, y0) - evalXY(state.exprFn, x0-h, y0)) / (2*h);
+      const dy = (evalXY(state.exprFn, x0, y0+h) - evalXY(state.exprFn, x0, y0-h)) / (2*h);
+      state.probe = { x0, y0, z0: isNaN(z0) ? 0 : z0 };
+      document.getElementById('probeZ').textContent = isNaN(z0) ? '—' : fmt(z0);
+      document.getElementById('probeDx').textContent = isNaN(dx) ? '—' : fmt(dx);
+      document.getElementById('probeDy').textContent = isNaN(dy) ? '—' : fmt(dy);
+    }
+
+    /* interactions */
+    let drag3d = false, last3d = null;
+    function pointerDown(x, y){ drag3d = true; state.dragging = true; last3d = { x, y }; }
+    function pointerMove(x, y){
+      if(!drag3d) return;
+      const dx = x - last3d.x, dy = y - last3d.y;
+      state.rotY += dx * 0.008;
+      state.rotX += dy * 0.008;
+      state.rotX = Math.max(-1.5, Math.min(1.5, state.rotX));
+      last3d = { x, y };
+    }
+    function pointerUp(){ drag3d = false; state.dragging = false; }
+
+    canvas3d.addEventListener('mousedown', e => {
+      const r = canvas3d.getBoundingClientRect();
+      pointerDown(e.clientX-r.left, e.clientY-r.top);
+    });
+    window.addEventListener('mouseup', pointerUp);
+    canvas3d.addEventListener('mousemove', e => {
+      const r = canvas3d.getBoundingClientRect();
+      pointerMove(e.clientX-r.left, e.clientY-r.top);
+    });
+    canvas3d.addEventListener('touchstart', e => {
+      const r = canvas3d.getBoundingClientRect();
+      const t = e.touches[0];
+      pointerDown(t.clientX-r.left, t.clientY-r.top);
+    }, { passive:true });
+    canvas3d.addEventListener('touchmove', e => {
+      const r = canvas3d.getBoundingClientRect();
+      const t = e.touches[0];
+      pointerMove(t.clientX-r.left, t.clientY-r.top);
+    }, { passive:true });
+    canvas3d.addEventListener('touchend', pointerUp);
+
+    canvas3d.addEventListener('wheel', e => {
+      e.preventDefault();
+      state.zoom *= (e.deltaY > 0 ? 0.9 : 1.1);
+      state.zoom = Math.max(0.3, Math.min(3, state.zoom));
+    }, { passive:false });
+
+    let rafId = null;
+    function loop(){
+      if(state.autoRotate && !state.dragging){
+        state.rotY += 0.006;
+      }
+      draw();
+      rafId = requestAnimationFrame(loop);
+    }
+
+    return {
+      setExpr(expr){
+        const ok = compileAndBuild(expr);
+        if(ok && state.probe) updateProbe(state.probe.x0, state.probe.y0);
+      },
+      setResolution(r){ state.resolution = r; buildMesh(); },
+      setMode(m){ state.mode = m; },
+      setAutoRotate(v){ state.autoRotate = v; },
+      reset(){ state.rotX = -0.6; state.rotY = 0.6; state.zoom = 1; },
+      updateProbe(x0, y0){ updateProbe(x0, y0); },
+      start(){ if(!rafId) loop(); }
+    };
+  })();
+
+  document.getElementById('fn3dBtn').addEventListener('click', () => {
+    const val = document.getElementById('fn3dInput').value.trim();
+    if(val) Surface3D.setExpr(val);
+  });
+  document.getElementById('fn3dInput').addEventListener('keydown', e => {
+    if(e.key === 'Enter') Surface3D.setExpr(e.target.value.trim());
+  });
+  document.getElementById('preset3dRow').addEventListener('click', e => {
+    const chip = e.target.closest('.preset-chip');
+    if(!chip) return;
+    document.getElementById('fn3dInput').value = chip.dataset.fn3;
+    Surface3D.setExpr(chip.dataset.fn3);
+  });
+  document.getElementById('renderModeGroup').addEventListener('click', e => {
+    const btn = e.target.closest('.seg-btn');
+    if(!btn) return;
+    document.querySelectorAll('#renderModeGroup .seg-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    Surface3D.setMode(btn.dataset.mode);
+  });
+  document.getElementById('resGroup').addEventListener('click', e => {
+    const btn = e.target.closest('.seg-btn');
+    if(!btn) return;
+    document.querySelectorAll('#resGroup .seg-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    Surface3D.setResolution(parseInt(btn.dataset.res,10));
+  });
+  document.getElementById('autoRotateToggle').addEventListener('change', e => {
+    Surface3D.setAutoRotate(e.target.checked);
+  });
+  document.getElementById('reset3dBtn').addEventListener('click', () => Surface3D.reset());
+  ['probeX','probeY'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => {
+      const x0 = parseFloat(document.getElementById('probeX').value);
+      const y0 = parseFloat(document.getElementById('probeY').value);
+      if(!isNaN(x0) && !isNaN(y0)) Surface3D.updateProbe(x0,y0);
+    });
+  });
+
+  /* ============================================================
+     COMPLEX NUMBER CALCULATOR
+  ============================================================ */
+  function parseComplex(str){
+    let s = (str||'').trim().replace(/\s+/g,'');
+    if(!s) return { re:0, im:0 };
+    let splitIdx = -1;
+    for(let k=1;k<s.length;k++){
+      const ch = s[k];
+      if((ch === '+' || ch === '-') && s[k-1] !== 'e' && s[k-1] !== 'E'){
+        splitIdx = k;
+      }
+    }
+    let partA, partB;
+    if(splitIdx === -1){
+      if(s.indexOf('i') !== -1){ partA = '0'; partB = s; }
+      else { partA = s; partB = '0i'; }
+    } else {
+      partA = s.slice(0, splitIdx);
+      partB = s.slice(splitIdx);
+    }
+    let realStr = partA, imStr = partB;
+    if(partA.indexOf('i') !== -1 && partB.indexOf('i') === -1){
+      realStr = partB; imStr = partA;
+    }
+    let re = parseFloat(realStr);
+    if(isNaN(re)) re = 0;
+    const iOnly = imStr.replace('i','');
+    let im;
+    if(iOnly === '' || iOnly === '+') im = 1;
+    else if(iOnly === '-') im = -1;
+    else im = parseFloat(iOnly);
+    if(isNaN(im)) im = 0;
+    return { re, im };
+  }
+
+  function formatComplex(c){
+    const re = Math.abs(c.re) < 1e-9 ? 0 : c.re;
+    const im = Math.abs(c.im) < 1e-9 ? 0 : c.im;
+    if(im === 0) return fmt(re);
+    if(re === 0) return `${fmt(im)}i`;
+    return `${fmt(re)} ${im >= 0 ? '+' : '−'} ${fmt(Math.abs(im))}i`;
+  }
+
+  function complexOp(op){
+    const z1 = parseComplex(document.getElementById('cplxA').value);
+    const z2 = parseComplex(document.getElementById('cplxB').value);
+    const resultEl = document.getElementById('cplxResult');
+    let out = '';
+    switch(op){
+      case 'add': out = formatComplex({re:z1.re+z2.re, im:z1.im+z2.im}); break;
+      case 'sub': out = formatComplex({re:z1.re-z2.re, im:z1.im-z2.im}); break;
+      case 'mul': out = formatComplex({re:z1.re*z2.re - z1.im*z2.im, im:z1.re*z2.im + z1.im*z2.re}); break;
+      case 'div': {
+        const denom = z2.re*z2.re + z2.im*z2.im;
+        out = denom === 0 ? 'undefined (÷0)' : formatComplex({re:(z1.re*z2.re+z1.im*z2.im)/denom, im:(z1.im*z2.re-z1.re*z2.im)/denom});
+        break;
+      }
+      case 'conj': out = formatComplex({re:z1.re, im:-z1.im}); break;
+      case 'mod': out = fmt(Math.sqrt(z1.re*z1.re + z1.im*z1.im)); break;
+      case 'arg': out = fmt(Math.atan2(z1.im, z1.re) * 180 / Math.PI) + '°'; break;
+      case 'polar': {
+        const r = Math.sqrt(z1.re*z1.re + z1.im*z1.im);
+        const th = Math.atan2(z1.im, z1.re) * 180 / Math.PI;
+        out = `${fmt(r)} · cis(${fmt(th)}°)`;
+        break;
+      }
+    }
+    resultEl.textContent = out;
+  }
+
+  document.getElementById('cplxOps').addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if(!btn) return;
+    complexOp(btn.dataset.op);
+  });
+
+  /* ============================================================
+     NOTES + LOCAL MATH CHECKER (no network, no external AI API)
+  ============================================================ */
+  let notes = [];
+  let activeNoteId = null;
+  let noteIdSeq = 1;
+
+  function newNote(title, content){
+    return { id: noteIdSeq++, title: title || 'Untitled note', content: content || '' };
+  }
+
+  function addNote(){
+    const n = newNote('Note ' + (notes.length+1), '');
+    notes.push(n);
+    activeNoteId = n.id;
+    renderNotesList();
+    loadActiveNoteIntoEditor();
+  }
+
+  function getActiveNote(){ return notes.find(n => n.id === activeNoteId) || null; }
+
+  function renderNotesList(){
+    const listEl = document.getElementById('notesList');
+    listEl.innerHTML = '';
+    notes.forEach(n => {
+      const chip = document.createElement('div');
+      chip.className = 'note-chip' + (n.id === activeNoteId ? ' active-note' : '');
+
+      const span = document.createElement('span');
+      span.className = 'title';
+      span.textContent = n.title || 'Untitled note';
+
+      const delBtn = document.createElement('button');
+      delBtn.textContent = '✕';
+      delBtn.title = 'Delete note';
+      delBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notes = notes.filter(x => x.id !== n.id);
+        if(activeNoteId === n.id) activeNoteId = notes.length ? notes[0].id : null;
+        renderNotesList();
+        loadActiveNoteIntoEditor();
+      });
+
+      chip.addEventListener('click', () => {
+        saveEditorIntoActiveNote();
+        activeNoteId = n.id;
+        renderNotesList();
+        loadActiveNoteIntoEditor();
+      });
+
+      chip.appendChild(span);
+      chip.appendChild(delBtn);
+      listEl.appendChild(chip);
+    });
+  }
+
+  function loadActiveNoteIntoEditor(){
+    const n = getActiveNote();
+    const titleEl = document.getElementById('noteTitle');
+    const contentEl = document.getElementById('noteContent');
+    document.getElementById('checkResults').innerHTML = '';
+    if(!n){
+      titleEl.value = ''; contentEl.value = '';
+      titleEl.disabled = true; contentEl.disabled = true;
+      return;
+    }
+    titleEl.disabled = false; contentEl.disabled = false;
+    titleEl.value = n.title;
+    contentEl.value = n.content;
+  }
+
+  function saveEditorIntoActiveNote(){
+    const n = getActiveNote();
+    if(!n) return;
+    n.title = document.getElementById('noteTitle').value || 'Untitled note';
+    n.content = document.getElementById('noteContent').value;
+  }
+
+  document.getElementById('addNoteBtn').addEventListener('click', () => { saveEditorIntoActiveNote(); addNote(); });
+  document.getElementById('noteTitle').addEventListener('input', () => { saveEditorIntoActiveNote(); renderNotesList(); });
+  document.getElementById('noteContent').addEventListener('input', saveEditorIntoActiveNote);
+
+  document.getElementById('exportNotesBtn').addEventListener('click', () => {
+    saveEditorIntoActiveNote();
+    const blob = new Blob([JSON.stringify(notes, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'slate-notes.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById('importNotesInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const imported = JSON.parse(reader.result);
+        if(Array.isArray(imported)){
+          imported.forEach(n => notes.push(newNote(n.title, n.content)));
+          activeNoteId = notes.length ? notes[notes.length-1].id : null;
+          renderNotesList();
+          loadActiveNoteIntoEditor();
+        }
+      }catch(err){ /* ignore malformed file */ }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+
+  /* ---- local math checker: arithmetic verification + single-unknown solver ---- */
+  const ALLOWED_VARS = ['x','y','z','t','n','k','m','p','q','r','s','u','v','w'];
+
+  function findVariables(text){
+    const found = new Set();
+    ALLOWED_VARS.forEach(v => {
+      const re = new RegExp('\\b' + v + '\\b', 'g');
+      if(re.test(text)) found.add(v);
+    });
+    return found;
+  }
+
+  function evalConst(expr){
+    try{
+      const fn = MathEngine.compile(expr, 'x');
+      const v = fn(0);
+      return (typeof v === 'number' && isFinite(v)) ? v : NaN;
+    }catch(err){ return NaN; }
+  }
+
+  function escapeHtml(s){
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function checkLine(line){
+    const raw = line.trim();
+    if(!raw || raw.indexOf('=') === -1) return null;
+
+    const eqIdx = raw.indexOf('=');
+    const lhsStr = raw.slice(0, eqIdx).trim();
+    const rhsStr = raw.slice(eqIdx+1).trim();
+    if(!lhsStr || !rhsStr) return null;
+
+    const vars = findVariables(lhsStr + ' ' + rhsStr);
+
+    if(vars.size === 0){
+      const lhsVal = evalConst(lhsStr);
+      const rhsVal = evalConst(rhsStr);
+      if(isNaN(lhsVal) || isNaN(rhsVal)) return null;
+      const ok = Math.abs(lhsVal - rhsVal) < 1e-6;
+      return { line: raw, kind: ok ? 'correct' : 'incorrect', message: ok ? 'Correct' : `Should equal ${fmt(lhsVal)}` };
+    }
+
+    if(vars.size > 1){
+      return { line: raw, kind: 'info', message: 'Multiple unknowns — not auto-solved' };
+    }
+
+    const varName = [...vars][0];
+    let lhsFn, rhsFn;
+    try{
+      lhsFn = MathEngine.compile(lhsStr, varName);
+      rhsFn = MathEngine.compile(rhsStr, varName);
+    }catch(err){
+      return { line: raw, kind: 'info', message: "Couldn't parse this line" };
+    }
+
+    function g(v){
+      try{
+        const l = lhsFn(v), r = rhsFn(v);
+        if(typeof l !== 'number' || typeof r !== 'number' || !isFinite(l) || !isFinite(r)) return NaN;
+        return l - r;
+      }catch(err){ return NaN; }
+    }
+
+    const gm2 = g(-2), gm1 = g(-1), g0 = g(0), g1 = g(1), g2 = g(2);
+    if([gm2,gm1,g0,g1,g2].some(v => isNaN(v))){
+      return { line: raw, kind: 'info', message: "Couldn't evaluate this line numerically" };
+    }
+
+    const d1a = gm1-gm2, d1b = g0-gm1, d1c = g1-g0, d1d = g2-g1;
+    const isLinear = Math.abs(d1a-d1b) < 1e-4 && Math.abs(d1b-d1c) < 1e-4 && Math.abs(d1c-d1d) < 1e-4;
+
+    if(isLinear){
+      const slope = (d1a+d1b+d1c+d1d)/4;
+      const intercept = g0;
+      if(Math.abs(slope) < 1e-9){
+        if(Math.abs(intercept) < 1e-6) return { line: raw, kind:'solved', message: `True for every ${varName} (identity)` };
+        return { line: raw, kind:'incorrect', message: 'No solution — both sides never match' };
+      }
+      const sol = -intercept/slope;
+      return { line: raw, kind:'solved', message: `${varName} = ${fmt(sol)}` };
+    }
+
+    const d2a = d1b-d1a, d2b = d1c-d1b, d2c = d1d-d1c;
+    const isQuadratic = Math.abs(d2a-d2b) < 1e-3 && Math.abs(d2b-d2c) < 1e-3;
+
+    if(isQuadratic){
+      const A = (g1 + gm1 - 2*g0)/2;
+      const B = (g1 - gm1)/2;
+      const C = g0;
+      if(Math.abs(A) < 1e-9){
+        return { line: raw, kind:'info', message: 'Detected as quadratic but leading term vanished' };
+      }
+      const disc = B*B - 4*A*C;
+      if(disc >= 0){
+        const sq = Math.sqrt(disc);
+        const r1 = (-B+sq)/(2*A), r2 = (-B-sq)/(2*A);
+        return { line: raw, kind:'solved', message: `${varName} = ${fmt(r1)} or ${varName} = ${fmt(r2)}` };
+      }
+      const realPart = -B/(2*A);
+      const imPart = Math.sqrt(-disc)/(2*A);
+      return { line: raw, kind:'solved', message: `${varName} = ${fmt(realPart)} ± ${fmt(Math.abs(imPart))}i` };
+    }
+
+    return { line: raw, kind:'info', message: 'Looks higher-degree or non-polynomial — try the 3D or Calc tab' };
+  }
+
+  function runMathChecker(){
+    const content = document.getElementById('noteContent').value;
+    const lines = content.split('\n');
+    const results = [];
+    lines.forEach(l => {
+      const r = checkLine(l);
+      if(r) results.push(r);
+    });
+    const resultsEl = document.getElementById('checkResults');
+    resultsEl.innerHTML = '';
+    if(results.length === 0){
+      resultsEl.innerHTML = '<div class="hint">No equations found. Try a line with an "=" sign.</div>';
+      return;
+    }
+    const icons = { correct:'✓', incorrect:'✗', solved:'⟶', info:'ℹ' };
+    results.forEach(r => {
+      const div = document.createElement('div');
+      div.className = 'check-item ' + r.kind;
+      div.innerHTML = `<div class="line">${escapeHtml(r.line)}</div><div class="verdict">${icons[r.kind]} ${escapeHtml(r.message)}</div>`;
+      resultsEl.appendChild(div);
+    });
+  }
+
+  document.getElementById('checkMathBtn').addEventListener('click', () => {
+    saveEditorIntoActiveNote();
+    runMathChecker();
+  });
+
+  /* ============================================================
+     INIT
+  ============================================================ */
+  addCurve('sin(x) * x');
+  addCurve('x^3 / 6 - x');
+  resizeCanvas();
+
+  Surface3D.setExpr('sin(sqrt(x*x+y*y))');
+  Surface3D.reset();
+  Surface3D.start();
+  Surface3D.updateProbe(1, 1);
+
+  notes.push(newNote('Warm-up', '2 + 2 = 4\n12 * 4 = 46\n3x + 5 = 20\nx^2 - 5x + 6 = 0'));
+  activeNoteId = notes[notes.length-1].id;
+  renderNotesList();
+  loadActiveNoteIntoEditor();
+})();
+</script>
+</body>
+</html>

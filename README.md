@@ -1,4 +1,4 @@
-# [Slate](https://nokqrii.github.io/slate/): New Era of Calculators and Graphing
+# [Slate](https://nokqrii.github.io/Slate/): New Era of Calculators and Graphing
 
 ## What is slate?
 ### A Mathematics website designed to help you study and calculate more efficiently and faster
